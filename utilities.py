@@ -17,7 +17,7 @@ def import_external_table(host, port, table_name, import_path):
         return 1
 
 
-def call_get_hdfs_adress(table_name, sandbox_ip):
+def call_get_hdfs_address(table_name, sandbox_ip):
     try:
         with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hadoop', password='hadoop', database='default') as conn:
             with conn.cursor() as cur:
@@ -68,14 +68,14 @@ def call_import_external(
         table_name,
         hive_table_meta,
         sandbox_ip,
-        dis_data_block_url):
+        file_path):
     try:
         with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hadoop', password='hadoop', database='default') as conn:
             with conn.cursor() as cur:
                 # Show databases
                 # print cur.getDatabases()
                 query = "create external table " + table_name + \
-                    "(" + hive_table_meta + ")" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION " + "'" + dis_data_block_url + "'"
+                    "(" + hive_table_meta + ")" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION " + "'" + file_path + "'"
                 print(query)
                 print(cur.execute(query))
                 return 0

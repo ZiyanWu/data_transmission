@@ -16,7 +16,7 @@ def sendDataToPortal():
     for index, temp in enumerate(hive_table_list):
         table_name = temp['table_name']
         sandbox_ip = temp['sandbox_ip'][1:-1]
-        source_data_block_url = call_get_hdfs_adress(table_name, sandbox_ip)
+        source_data_block_url = call_get_hdfs_address(table_name, sandbox_ip)
         dis_data_block_url = temp['hdfs_dis_data_block_url']
         hive_table_meta = call_get_meta_data(table_name)
 
