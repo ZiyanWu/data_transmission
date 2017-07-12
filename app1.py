@@ -10,8 +10,6 @@ from utilities import *
 @app.route('/dataquality/api/sendDataToPortal', methods=['GET'])
 def sendDataToPortal():
     hive_table_list = json.loads(request.args.get('hive_table_list'))
-    status1 = []
-    status2 = []
 
     for index, temp in enumerate(hive_table_list):
         table_name = temp['table_name']
@@ -23,15 +21,13 @@ def sendDataToPortal():
         print(dis_data_block_url)
         print(table_name)
         print(source_data_block_url)
-        status1.append(call_distcp(source_data_block_url, dis_data_block_url))
-        status2.append(
-            call_import_external_wanda(
+        call_distcp(source_data_block_url, dis_data_block_url))
+        call_import_external_wanda(
                 table_name,
                 hive_table_meta,
                 ip,
                 dis_data_block_url))
 
-    print([status1,status2])
     return jsonify({'status': "okay"}), 200
     
 
