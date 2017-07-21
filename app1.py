@@ -21,12 +21,12 @@ def sendDataToPortal():
         print(dis_data_block_url)
         print(table_name)
         print(source_data_block_url)
-        call_distcp(source_data_block_url, dis_data_block_url))
+        call_distcp(source_data_block_url, dis_data_block_url)
         call_import_external_wanda(
                 table_name,
                 hive_table_meta,
-                ip,
-                dis_data_block_url))
+                wanda_ip,
+                dis_data_block_url)
 
     return jsonify({'status': "okay"}), 200
     
@@ -65,14 +65,12 @@ def loadDateFromProtal():
         print(table_name)
         print(dis_data_block_url)
         # print(hive_table_meta)
-        status1.append(call_distcp(source_data_block_url, dis_data_block_url))
-        status2.append(
-            call_import_external(
+        distcp_and_import(
+                source_data_block_url,
                 table_name,
                 hive_table_meta,
                 sandbox_ip,
-                file_path))
-    print([status1, status2])
+                file_path)
     return jsonify({'status': "okay"}), 200
 
 
