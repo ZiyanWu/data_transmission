@@ -2,7 +2,13 @@ import subprocess
 from subprocess import call
 import json
 import pyhs2
-from async_call_distcp import async_call_distcp
+import async_tasks
+
+def call_distcp(src_url, dis_url):
+    async_tasks.distcp.delay(src_url, dis_url)
+
+def distcp_and_import(src_url, table_name, data_meta, sandbox_ip, file_path):
+    async_tasks.distcp_and_import.delay(src_url, table_name, data_meta, sandbox_ip, file_path)
 
 def import_external_table(host, port, table_name, import_path):
     try:
@@ -18,8 +24,9 @@ def import_external_table(host, port, table_name, import_path):
 
 
 def call_get_hdfs_address(table_name, sandbox_ip):
+    sandbox_ip = '10.132.141.120'
     try:
-        with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hadoop', password='hadoop', database='default') as conn:
+        with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hive', password='hive', database='bigdata') as conn:
             with conn.cursor() as cur:
                 # Show databases
                 # print cur.getDatabases()
@@ -53,35 +60,6 @@ def call_get_meta_data(table_name):
                 return meta_data
     except BaseException:
         return None
-
-
-def call_distcp(source_data_block_url, dis_data_block_url):
-    
-    result = async_call_distcp.delay(source_data_block_url, dis_data_block_url)
-    return 0
-    
-    #ret_val = call(["hadoop", "distcp", source_data_block_url, dis_data_block_url])
-    #return ret_val
-
-
-def call_import_external(
-        table_name,
-        hive_table_meta,
-        sandbox_ip,
-        file_path):
-    try:
-        with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hadoop', password='hadoop', database='default') as conn:
-            with conn.cursor() as cur:
-                # Show databases
-                # print cur.getDatabases()
-                query = "create external table " + table_name + \
-                    "(" + hive_table_meta + ")" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION " + "'" + file_path + "'"
-                print(query)
-                print(cur.execute(query))
-                return 0
-    except BaseException:
-        return 1
-
 
 def transform_hive_meta(hive_table_meta):
     temp1 = hive_table_meta.split(",")
