@@ -10,23 +10,30 @@ from utilities import *
 @app.route('/dataquality/api/sendDataToPortal', methods=['GET'])
 def sendDataToPortal():
     hive_table_list = json.loads(request.args.get('hive_table_list'))
+    dst_data_block_url = request.args.get('hdfs_dest_data_block_url')[1:-1]
+    # dst_data_block_url=dst_data_block_url.encode('utf-8')
 
     for index, temp in enumerate(hive_table_list):
         table_name = temp['table_name']
-        sandbox_ip = temp['sandbox_ip'][1:-1]
-        source_data_block_url = call_get_hdfs_address(table_name, sandbox_ip)
-        dis_data_block_url = temp['hdfs_dis_data_block_url']
-        hive_table_meta = call_get_meta_data(table_name)
+        sandbox_ip = temp['sandbox_ip']
+        
+        print sandbox_ip
+        print table_name
 
-        print(dis_data_block_url)
-        print(table_name)
-        print(source_data_block_url)
-        call_distcp(source_data_block_url, dis_data_block_url)
-        call_import_external_wanda(
-                table_name,
-                hive_table_meta,
-                wanda_ip,
-                dis_data_block_url)
+        source_data_block_url = call_get_hdfs_address(table_name, sandbox_ip)
+        hive_table_meta = call_get_meta_data(table_name,sandbox_ip)
+        temp=[]
+        for item in hive_table_meta:
+            temp.append(' '.join(item))
+        meta=','.join(temp)
+
+        #print type(meta)
+        #print type(dst_data_block_url)
+        #print type(table_name)
+        #print type(source_data_block_url)
+        
+        wanda_import_table(source_data_block_url, dst_data_block_url, table_name, meta)
+
 
     return jsonify({'status': "okay"}), 200
     

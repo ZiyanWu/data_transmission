@@ -4,6 +4,10 @@ import json
 import pyhs2
 import async_tasks
 
+
+def wanda_import_table(src_url, dst_url, table_name, hive_table_meta):
+    async_tasks.wanda_import_table.delay(src_url,dst_url,table_name,hive_table_meta)
+
 def call_distcp(src_url, dis_url):
     async_tasks.distcp.delay(src_url, dis_url)
 
@@ -24,7 +28,6 @@ def import_external_table(host, port, table_name, import_path):
 
 
 def call_get_hdfs_address(table_name, sandbox_ip):
-    sandbox_ip = '10.132.141.120'
     try:
         with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hive', password='hive', database='bigdata') as conn:
             with conn.cursor() as cur:
@@ -37,19 +40,23 @@ def call_get_hdfs_address(table_name, sandbox_ip):
                     # print(i)
                     # print(i[0])
                     if(i[0] == 'Location:           '):
-                        return i[1].split("9000")[1]
-    except BaseException:
-        return None
+                       return i[1].split("9000")[1]
+    except BaseException,e:
+        print e
+        return -1
 
 
-def call_get_meta_data(table_name):
+def call_get_meta_data(table_name,sandbox_ip):
     try:
-        with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hadoop', password='hadoop', database='default') as conn:
+        with pyhs2.connect(host=sandbox_ip, port=10000, authMechanism="PLAIN", user='hive', password='hive', database='bigdata') as conn:
             with conn.cursor() as cur:
                 # Show databases
                 # print cur.getDatabases()
+                query = "desc formatted "+ table_name 
+                print(query)
                 cur.execute(query)
                 meta_data = []
+                flag = 0
                 for i in cur.fetch():
                     if(i[0] == '' and flag == 0):
                         flag = 1
@@ -58,7 +65,8 @@ def call_get_meta_data(table_name):
                     elif(flag == 1):
                         meta_data.append((i[0].strip(), i[1].strip()))
                 return meta_data
-    except BaseException:
+    except Exception,e:
+        print e
         return None
 
 def transform_hive_meta(hive_table_meta):

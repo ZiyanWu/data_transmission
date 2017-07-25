@@ -9,7 +9,21 @@ app = Celery('call_distcp', backend='amqp://', broker='amqp://')
 def distcp(src_url, dis_url):
     return call(
         ['hadoop', 'distcp', src_url, dis_url])
+@app.task
+def wanda_import_table(src_url, dst_url, table_name, hive_table_meta):
 
+    # print async_tasks.distcp(src_url, dst_url)
+    
+    try:
+        with pyhs2.connect(host='10.141.220.200',port=10000,database='default',authMechanism='PLAIN',user='hive',password='123456') as con: 
+            with con.cursor() as cur:
+                query = "create external table hive_" + table_name + "(" + hive_table_meta + ")" + "row format serde 'parquet.hive.serde.ParquetHiveSerDe' stored as inputformat 'parquet.hive.DeprecatedParquetInputFormat' outputformat 'parquet.hive.DeprecatedParquetOutputFormat' location '" + dst_url +"'"
+                print(query)
+                cur.execute(query)
+                return 0
+    except Exception,e:
+        print 'Exception found in wanda_import_table: ',e
+        return 1
 
 @app.task
 def distcp_and_import(
